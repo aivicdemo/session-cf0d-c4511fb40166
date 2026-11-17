@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>みなと修理カルテ - ログイン画面</title>
+  <style>
+    :root {
+      /* ========== カラーパレット ========== */
+      /* 落ち着いた、目が疲れない白っぽい背景 + 状態識別用の色 */
+      --primary: #2c5aa0;
+      --primary-hover: #1e3f70;
+      --bg-main: #f8f9fa;
+      --bg-card: #ffffff;
+      --bg-sidebar: #f3f4f6;
+      
+      /* ステータス識別色（状態を見分けるため） */
+      --status-stopped: #d32f2f;
+      --status-overdue: #f57c00;
+      --status-active: #388e3c;
+      --status-pending: #1976d2;
+      
+      /* テキスト */
+      --text: #1a1a1a;
+      --text-muted: #6b7280;
+      
+      /* トップバー（作業場タブレット対応） */
+      --top-bar-bg: #2c5aa0;
+      --top-bar-border: #1e3f70;
+      --top-bar-text: #ffffff;
+      
+      /* ========== タイポグラフィ ========== */
+      /* 一日中開いたままで使うので、読みやすい大きめの文字 */
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+      --font-size-base: 16px;
+      --font-size-large: 18px;
+      --font-size-heading: 24px;
+      --line-height-base: 1.6;
+      --font-weight-normal: 400;
+      --font-weight-medium: 500;
+      --font-weight-bold: 700;
+      
+      /* ========== スペーシング ========== */
+      /* 作業場のタブレット対応：指で押しやすい大きさ */
+      --space-unit: 8px;
+      --space-xs: calc(var(--space-unit) * 1);
+      --space-sm: calc(var(--space-unit) * 2);
+      --space-md: calc(var(--space-unit) * 3);
+      --space-lg: calc(var(--space-unit) * 4);
+      --space-xl: calc(var(--space-unit) * 6);
+      
+      /* ========== コントロール寸法 ========== */
+      /* 離れた場所からでも読めて、ボタンを指で押しやすい大きさ */
+      --control-height: 48px;
+      --control-height-sm: 40px;
+      --control-height-lg: 56px;
+      --control-padding-h: var(--space-lg);
+      --control-padding-v: var(--space-md);
+      
+      /* ========== 角丸 ========== */
+      /* 飾りの少ない、落ち着いた見た目 */
+      --radius-control: 4px;
+      --radius-card: 6px;
+      
+      /* ========== 枠線 ========== */
+      --border: #e5e7eb;
+      --border-width: 1px;
+      --border-style: solid;
+      
+      /* ========== シャドウ ========== */
+      /* 落ち着いた見た目：控えめで自然な影 */
+      --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08);
+      --shadow-card-hover: 0 2px 6px rgba(0, 0, 0, 0.12);
+      --shadow-modal: 0 10px 40px rgba(0, 0, 0, 0.15);
+      
+      /* ========== アニメーション ========== */
+      --motion-duration: 200ms;
+      --motion-easing: cubic-bezier(0.4, 0, 0.2, 1);
+      
+      /* ========== 質感 ========== */
+      /* 飾りの少ない、落ち着いた見た目：微細な紙のような質感 */
+      --surface-texture: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.01) 0px,
+        rgba(0, 0, 0, 0.01) 1px,
+        transparent 1px,
+        transparent 2px
+      );
+      --surface-texture-size: 2px;
+      --surface-texture-position: 0 0;
+      
+      /* ========== 状態識別用の補助変数 ========== */
+      --status-stopped-bg: #ffebee;
+      --status-overdue-bg: #fff3e0;
+      --status-active-bg: #e8f5e9;
+      --status-pending-bg: #e3f2fd;
+      
+      /* ========== アクセシビリティ ========== */
+      --focus-outline: 2px solid var(--primary);
+      --focus-outline-offset: 2px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+    }
+
+    body {
+      font-family: var(--font-family);
+      font-size: var(--font-size-base);
+      line-height: var(--line-height-base);
+      color: var(--text);
+      background: linear-gradient(135deg, var(--bg-main) 0%, #f0f1f3 100%);
+      background-attachment: fixed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: var(--space-lg);
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .login-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-modal);
+      padding: var(--space-xl) var(--space-lg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--primary-hover) 100%);
+    }
+
+    .login-header {
+      margin-bottom: var(--space-xl);
+      text-align: center;
+    }
+
+    .login-logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+      border-radius: var(--radius-control);
+      margin-bottom: var(--space-lg);
+      box-shadow: var(--shadow-card);
+    }
+
+    .login-logo svg {
+      width: 32px;
+      height: 32px;
+      color: white;
+    }
+
+    .login-title {
+      font-size: var(--font-size-heading);
+      font-weight: var(--font-weight-bold);
+      color: var(--text);
+      margin-bottom: var(--space-sm);
+    }
+
+    .login-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      font-weight: var(--font-weight-normal);
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-lg);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+
+    .form-label {
+      font-size: 14px;
+      font-weight: var(--font-weight-medium);
+      color: var(--text);
+      display: block;
+    }
+
+    .form-input {
+      width: 100%;
+      height: var(--control-height);
+      padding: var(--control-padding-v) var(--control-padding-h);
+      font-size: var(--font-size-base);
+      font-family: var(--font-family);
+      color: var(--text);
+      background: var(--bg-card);
+      border: var(--border-width) var(--border-style) var(--border);
+      border-radius: var(--radius-control);
+      transition: all var(--motion-duration) var(--motion-easing);
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+    }
+
+    .form-input:hover {
+      border-color: #d1d5db;
+      box-shadow: var(--shadow-card);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .login-button {
+      height: var(--control-height-lg);
+      padding: var(--control-padding-v) var(--control-padding-h);
+      font-size: var(--font-size-large);
+      font-weight: var(--font-weight-bold);
+      color: white;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+      border: none;
+      border-radius: var(--radius-control);
+      cursor: pointer;
+      transition: all var(--motion-duration) var(--motion-easing);
+      box-shadow: var(--shadow-card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+      margin-top: var(--space-md);
+    }
+
+    .login-button:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-card-hover);
+    }
+
+    .login-button:active {
+      transform: translateY(0);
+      box-shadow: var(--shadow-card);
+    }
+
+    .login-button:focus {
+      outline: var(--focus-outline);
+      outline-offset: var(--focus-outline-offset);
+    }
+
+    .login-button-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-footer {
+      margin-top: var(--space-xl);
+      padding-top: var(--space-lg);
+      border-top: var(--border-width) var(--border-style) var(--border);
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .login-footer strong {
+      display: block;
+      font-weight: var(--font-weight-medium);
+      color: var(--status-pending);
+      margin-bottom: var(--space-xs);
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: var(--space-md);
+      }
+
+      .login-card {
+        padding: var(--space-lg) var(--space-md);
+      }
+
+      .login-title {
+        font-size: 20px;
+      }
+
+      .login-button {
+        height: var(--control-height);
+        font-size: var(--font-size-base);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v20M2 12h20M6 6l12 12M18 6l-12 12"></path>
+          </svg>
+        </div>
+        <h1 class="login-title" data-testid="login-title">みなと修理カルテ</h1>
+        <p class="login-subtitle">修理管理業務システム</p>
+      </div>
+
+      <form class="login-form" data-testid="login-form" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="username">ユーザー名</label>
+          <input
+            class="form-input"
+            type="text"
+            id="username"
+            name="username"
+            data-testid="username"
+            placeholder="ユーザー名を入力"
+            autocomplete="username"
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">パスワード</label>
+          <input
+            class="form-input"
+            type="password"
+            id="password"
+            name="password"
+            data-testid="password"
+            placeholder="パスワードを入力"
+            autocomplete="current-password"
+          >
+        </div>
+
+        <button
+          class="login-button"
+          type="submit"
+          data-testid="login-button"
+        >
+          <span class="login-button-icon">→</span>
+          ログイン
+        </button>
+      </form>
+
+      <div class="login-footer">
+        <strong>サンプル実装について</strong>
+        このログイン画面は AIVIC のサンプル実装です。どのような入力でもログインできます。
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.querySelector('[data-testid="login-form"]').addEventListener('submit', function(e) {
+      e.preventDefault();
+      window.location.href = './index.html';
+    });
+  </script>
+</body>
+</html>
